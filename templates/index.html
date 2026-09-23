@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="landingpage">
+        <title>Itemlist</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <h1>Itemlist</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Itemname</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th>{{.ID}}</th>
+                    <th>{{.Itemname}}</th>
+                    <th>{{.Category}}</th>
+                    <th>{{.Amount}}</th>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>
