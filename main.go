@@ -26,4 +26,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	err = templ.Execute(w, p)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
