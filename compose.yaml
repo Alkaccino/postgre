@@ -3,8 +3,8 @@ services:
     image: postgres:18
     container_name: items
     environment:
-      POSTGRE_PASSWORD: 1234
-      POSTGRE_USER: alkan
+      POSTGRES_PASSWORD: cookies
+      POSTGRES_USER: alkan
       POSTGRES_DB: PostgreDB
     ports:
       - "5432:5432"
