@@ -51,14 +51,35 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("GET /", handler)
+	http.HandleFunc("/", landingHandler)
+	http.HandleFunc("/create/", createHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func landingHandler(w http.ResponseWriter, r *http.Request) {
 	p := Item{1, "Testitem", "Testcategory", 2}
 
 	templ, err := template.ParseFiles("./templates/index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = templ.Execute(w, p)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func createHandler(w http.ResponseWriter, r *http.Request) {
+	p := "Hello"
+
+	r.ParseForm()
+
+	fmt.Println(r.FormValue("item_name"))
+	fmt.Println(r.FormValue("item_category"))
+	fmt.Println(r.FormValue("item_amount"))
+	fmt.Println("Hi")
+
+	templ, err := template.ParseFiles("./templates/create_item.html")
 	if err != nil {
 		log.Fatal(err)
 	}

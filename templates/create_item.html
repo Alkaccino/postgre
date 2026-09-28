@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="create-page">
+        <title>Create Item</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <h1>Create Item</h1>
+
+        <form action="/create/" method="POST">
+            <label for="item_name">Itemname:</label><br>
+            <input type="text" id="item_name" name="item_name"><br>
+            <label for="item_category">Category:</label><br>
+            <input type="text" id="item_category" name="item_category"><br>
+            <label for="item_amount">Amount:</label><br>
+            <input type="text" id="item_amount" name="item_amount"><br>
+            <input type="submit" value="Submit"><br>
+        </form>
+    </body>
+</html>
