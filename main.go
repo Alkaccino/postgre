@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -18,6 +19,8 @@ type Item struct {
 	Category string
 	Amount   int
 }
+
+var conn *pgx.Conn
 
 func main() {
 	env, err := os.ReadFile(".env")
@@ -35,7 +38,7 @@ func main() {
 
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", db_user, db_password, db_host, db_port, db_name)
 
-	conn, err := pgx.Connect(context.Background(), connStr)
+	conn, err = pgx.Connect(context.Background(), connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,20 +73,41 @@ func landingHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createHandler(w http.ResponseWriter, r *http.Request) {
-	p := "Hello"
+	if r.Method == "POST" {
 
-	r.ParseForm()
+		insert_query, err := os.ReadFile("./sql/insert_items.sql")
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	fmt.Println(r.FormValue("item_name"))
-	fmt.Println(r.FormValue("item_category"))
-	fmt.Println(r.FormValue("item_amount"))
-	fmt.Println("Hi")
+		amount, err := strconv.Atoi(r.FormValue("item_amount"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		insert_args := pgx.NamedArgs{
+			"itemname":     r.FormValue("item_name"),
+			"itemcategory": r.FormValue("item_category"),
+			"amount":       amount,
+		}
+
+		_, err = conn.Exec(
+			context.Background(),
+			string(insert_query),
+			insert_args)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		r.ParseForm()
+	}
 
 	templ, err := template.ParseFiles("./templates/create_item.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = templ.Execute(w, p)
+	err = templ.Execute(w, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
