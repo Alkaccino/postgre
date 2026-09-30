@@ -60,16 +60,31 @@ func main() {
 }
 
 func landingHandler(w http.ResponseWriter, r *http.Request) {
-	p := Item{1, "Testitem", "Testcategory", 2}
+	var id int
+	var itemname string
+	var itemcategory string
+	var amount int
 
-	templ, err := template.ParseFiles("./templates/index.html")
+	select_sql, err := os.ReadFile("./sql/select_items.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = templ.Execute(w, p)
+
+	selectedItems, err := conn.Query(context.Background(), string(select_sql))
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer selectedItems.Close()
+
+	for selectedItems.Next() {
+		if err := selectedItems.Scan(&id, &itemname, &itemcategory, &amount, nil); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	p := Item{id, itemname, itemcategory, amount}
+
+	renderTemplate(w, "index.html", p)
 }
 
 func createHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,11 +118,16 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 	}
 
-	templ, err := template.ParseFiles("./templates/create_item.html")
+	renderTemplate(w, "create_item.html", nil)
+}
+
+func renderTemplate(w http.ResponseWriter, templ string, templData any) {
+	t, err := template.ParseFiles("./templates/" + templ)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = templ.Execute(w, nil)
+
+	err = t.Execute(w, templData)
 	if err != nil {
 		log.Fatal(err)
 	}
