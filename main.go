@@ -14,10 +14,10 @@ import (
 )
 
 type Item struct {
-	ID            int
-	Item_Name     string
-	Item_Category string
-	Item_Amount   int
+	Id            int
+	Item_name     string
+	Item_category string
+	Item_amount   int
 }
 
 var conn *pgx.Conn
@@ -60,7 +60,7 @@ func main() {
 }
 
 func landingHandler(w http.ResponseWriter, r *http.Request) {
-	var Items []Item
+	var items []Item
 
 	select_sql, err := os.ReadFile("./sql/select_items.sql")
 	if err != nil {
@@ -74,15 +74,15 @@ func landingHandler(w http.ResponseWriter, r *http.Request) {
 	defer selected_items.Close()
 
 	for selected_items.Next() {
-		var itm Item
-		if err := selected_items.Scan(&itm.ID, &itm.Item_Name, &itm.Item_Category, &itm.Item_Amount, nil); err != nil {
+		var item Item
+		if err := selected_items.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
 			log.Fatal(err)
 		}
 
-		Items = append(Items, itm)
+		items = append(items, item)
 	}
 
-	renderTemplate(w, "index.html", Items)
+	renderTemplate(w, "index.html", items)
 }
 
 func createHandler(w http.ResponseWriter, r *http.Request) {
@@ -116,13 +116,13 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "create_item.html", nil)
 }
 
-func renderTemplate(w http.ResponseWriter, templ string, templ_data any) {
-	tmpl, err := template.ParseFiles("./templates/" + templ)
+func renderTemplate(w http.ResponseWriter, templ_path string, templ_data any) {
+	templ, err := template.ParseFiles("./templates/" + templ_path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = tmpl.Execute(w, templ_data)
+	err = templ.Execute(w, templ_data)
 	if err != nil {
 		log.Fatal(err)
 	}
