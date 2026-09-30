@@ -19,12 +19,14 @@
                 </tr>
             </thead>
             <tbody>
+                {{range .}}
                 <tr>
                     <th>{{.ID}}</th>
                     <th>{{.Itemname}}</th>
                     <th>{{.Category}}</th>
                     <th>{{.Amount}}</th>
                 </tr>
+                {{end}}
             </tbody>
         </table>
     </body>

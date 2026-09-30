@@ -20,6 +20,11 @@ type Item struct {
 	Amount   int
 }
 
+type ViewData struct {
+	Name  string
+	Items []Item
+}
+
 var conn *pgx.Conn
 
 func main() {
@@ -60,10 +65,7 @@ func main() {
 }
 
 func landingHandler(w http.ResponseWriter, r *http.Request) {
-	var id int
-	var itemname string
-	var itemcategory string
-	var amount int
+	var Items []Item
 
 	select_sql, err := os.ReadFile("./sql/select_items.sql")
 	if err != nil {
@@ -77,14 +79,15 @@ func landingHandler(w http.ResponseWriter, r *http.Request) {
 	defer selectedItems.Close()
 
 	for selectedItems.Next() {
-		if err := selectedItems.Scan(&id, &itemname, &itemcategory, &amount, nil); err != nil {
+		var itm Item
+		if err := selectedItems.Scan(&itm.ID, &itm.Itemname, &itm.Category, &itm.Amount, nil); err != nil {
 			log.Fatal(err)
 		}
+
+		Items = append(Items, itm)
 	}
 
-	p := Item{id, itemname, itemcategory, amount}
-
-	renderTemplate(w, "index.html", p)
+	renderTemplate(w, "index.html", Items)
 }
 
 func createHandler(w http.ResponseWriter, r *http.Request) {
