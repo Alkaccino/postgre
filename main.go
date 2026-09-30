@@ -14,15 +14,10 @@ import (
 )
 
 type Item struct {
-	ID       int
-	Itemname string
-	Category string
-	Amount   int
-}
-
-type ViewData struct {
-	Name  string
-	Items []Item
+	ID            int
+	Item_Name     string
+	Item_Category string
+	Item_Amount   int
 }
 
 var conn *pgx.Conn
@@ -33,17 +28,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	envData := strings.Split(string(env), "\n")
+	env_data := strings.Split(string(env), "\n")
 
-	_, db_user, _ := strings.Cut(envData[0], "=")
-	_, db_password, _ := strings.Cut(envData[1], "=")
-	_, db_host, _ := strings.Cut(envData[2], "=")
-	_, db_port, _ := strings.Cut(envData[3], "=")
-	_, db_name, _ := strings.Cut(envData[4], "=")
+	_, db_user, _ := strings.Cut(env_data[0], "=")
+	_, db_password, _ := strings.Cut(env_data[1], "=")
+	_, db_host, _ := strings.Cut(env_data[2], "=")
+	_, db_port, _ := strings.Cut(env_data[3], "=")
+	_, db_name, _ := strings.Cut(env_data[4], "=")
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", db_user, db_password, db_host, db_port, db_name)
+	conn_str := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", db_user, db_password, db_host, db_port, db_name)
 
-	conn, err = pgx.Connect(context.Background(), connStr)
+	conn, err = pgx.Connect(context.Background(), conn_str)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,15 +67,15 @@ func landingHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	selectedItems, err := conn.Query(context.Background(), string(select_sql))
+	selected_items, err := conn.Query(context.Background(), string(select_sql))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer selectedItems.Close()
+	defer selected_items.Close()
 
-	for selectedItems.Next() {
+	for selected_items.Next() {
 		var itm Item
-		if err := selectedItems.Scan(&itm.ID, &itm.Itemname, &itm.Category, &itm.Amount, nil); err != nil {
+		if err := selected_items.Scan(&itm.ID, &itm.Item_Name, &itm.Item_Category, &itm.Item_Amount, nil); err != nil {
 			log.Fatal(err)
 		}
 
@@ -98,15 +93,15 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		amount, err := strconv.Atoi(r.FormValue("item_amount"))
+		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		insert_args := pgx.NamedArgs{
-			"itemname":     r.FormValue("item_name"),
-			"itemcategory": r.FormValue("item_category"),
-			"amount":       amount,
+			"item_name":     r.FormValue("item_name"),
+			"item_category": r.FormValue("item_category"),
+			"item_amount":   item_amount,
 		}
 
 		_, err = conn.Exec(
@@ -124,13 +119,13 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "create_item.html", nil)
 }
 
-func renderTemplate(w http.ResponseWriter, templ string, templData any) {
-	t, err := template.ParseFiles("./templates/" + templ)
+func renderTemplate(w http.ResponseWriter, templ string, templ_data any) {
+	tmpl, err := template.ParseFiles("./templates/" + templ)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = t.Execute(w, templData)
+	err = tmpl.Execute(w, templ_data)
 	if err != nil {
 		log.Fatal(err)
 	}
