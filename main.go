@@ -104,10 +104,7 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 			"item_amount":   item_amount,
 		}
 
-		_, err = conn.Exec(
-			context.Background(),
-			string(insert_query),
-			insert_args)
+		_, err = conn.Exec(context.Background(), string(insert_query), insert_args)
 
 		if err != nil {
 			log.Fatal(err)
