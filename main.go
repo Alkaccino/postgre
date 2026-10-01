@@ -54,6 +54,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	http.Handle("/static/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/", landingHandler)
 	http.HandleFunc("/create/", createHandler)
 	http.ListenAndServe(":8080", nil)

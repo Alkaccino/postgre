@@ -1,0 +1,35 @@
+body {
+    background-color: black;
+}
+
+h1 {
+    color:white;
+    text-align: left;
+}
+
+table, th, td {
+    color: white;
+    border: 1px solid white;
+    border-collapse: collapse;
+    padding: 10px;
+}
+
+label {
+    color: white;
+    text-align: left;
+    display: block;
+}
+
+input {
+    display: block;
+}
+
+a {
+    display: block;
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    width: fit-content;
+}
