@@ -21,8 +21,21 @@ type Item struct {
 }
 
 var conn *pgx.Conn
+var ctx = context.Background()
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
+	InitDataBase()
+	defer conn.Close(ctx)
+
+	http.Handle("/static/", http.FileServer(http.Dir(".")))
+	http.HandleFunc("/", LandingHandler)
+	http.HandleFunc("/create/", CreateHandler)
+	http.ListenAndServe(":8080", nil)
+}
+
+func InitDataBase() {
 	env, err := os.ReadFile(".env")
 	if err != nil {
 		log.Fatal(err)
@@ -38,29 +51,23 @@ func main() {
 
 	conn_str := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", db_user, db_password, db_host, db_port, db_name)
 
-	conn, err = pgx.Connect(context.Background(), conn_str)
+	conn, err = pgx.Connect(ctx, conn_str)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close(context.Background())
 
 	create_sql, err := os.ReadFile("./sql/create_table.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = conn.Exec(context.Background(), string(create_sql))
+	_, err = conn.Exec(ctx, string(create_sql))
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	http.Handle("/static/", http.FileServer(http.Dir(".")))
-	http.HandleFunc("/", landingHandler)
-	http.HandleFunc("/create/", createHandler)
-	http.ListenAndServe(":8080", nil)
 }
 
-func landingHandler(w http.ResponseWriter, r *http.Request) {
+func LandingHandler(w http.ResponseWriter, r *http.Request) {
 	var items []Item
 
 	select_sql, err := os.ReadFile("./sql/select_items.sql")
@@ -68,11 +75,10 @@ func landingHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	selected_items, err := conn.Query(context.Background(), string(select_sql))
+	selected_items, err := conn.Query(ctx, string(select_sql))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer selected_items.Close()
 
 	for selected_items.Next() {
 		var item Item
@@ -83,10 +89,36 @@ func landingHandler(w http.ResponseWriter, r *http.Request) {
 		items = append(items, item)
 	}
 
-	renderTemplate(w, "index.html", items)
+	defer selected_items.Close()
+
+	if r.Method == "POST" {
+		delete_sql, err := os.ReadFile("./sql/delete_item.sql")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		id_value, err := strconv.Atoi(r.FormValue("delete"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		delete_args := pgx.NamedArgs{
+			"id": id_value,
+		}
+
+		_, err = conn.Exec(ctx, string(delete_sql), delete_args)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	RenderTemplate(w, "index.html", items)
 }
 
-func createHandler(w http.ResponseWriter, r *http.Request) {
+func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 
 		insert_query, err := os.ReadFile("./sql/insert_items.sql")
@@ -105,19 +137,21 @@ func createHandler(w http.ResponseWriter, r *http.Request) {
 			"item_amount":   item_amount,
 		}
 
-		_, err = conn.Exec(context.Background(), string(insert_query), insert_args)
-
-		if err != nil {
-			log.Fatal(err)
+		for index := 0; index < 5; index++ {
+			_, err = conn.Exec(ctx, string(insert_query), insert_args)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		r.ParseForm()
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
-	renderTemplate(w, "create_item.html", nil)
+	RenderTemplate(w, "create_item.html", nil)
 }
 
-func renderTemplate(w http.ResponseWriter, templ_path string, templ_data any) {
+func RenderTemplate(w http.ResponseWriter, templ_path string, templ_data any) {
 	templ, err := template.ParseFiles("./templates/" + templ_path)
 	if err != nil {
 		log.Fatal(err)

@@ -1,5 +1,5 @@
 body {
-    background-color: black;
+    background-color: rgb(31, 33, 51);
 }
 
 h1 {
@@ -12,6 +12,7 @@ table, th, td {
     border: 1px solid white;
     border-collapse: collapse;
     padding: 10px;
+    text-align: center;
 }
 
 label {
@@ -32,4 +33,10 @@ a {
     border-radius: 8px;
     margin-top: 10px;
     width: fit-content;
+    text-decoration: none;
+}
+
+form {
+    text-align: center;
+    display: block;
 }
