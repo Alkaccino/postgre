@@ -92,26 +92,38 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 	defer selected_items.Close()
 
 	if r.Method == "POST" {
-		delete_sql, err := os.ReadFile("./sql/delete_item.sql")
-		if err != nil {
-			log.Fatal(err)
+
+		if r.FormValue("delete") != "" {
+			delete_sql, err := os.ReadFile("./sql/delete_item.sql")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			id_value, err := strconv.Atoi(r.FormValue("delete"))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			delete_args := pgx.NamedArgs{
+				"id": id_value,
+			}
+
+			_, err = conn.Exec(ctx, string(delete_sql), delete_args)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+
+		} else if r.FormValue("edit") != "" {
+			id_value, err := strconv.Atoi(r.FormValue("edit"))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Print(id_value)
 		}
 
-		id_value, err := strconv.Atoi(r.FormValue("delete"))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		delete_args := pgx.NamedArgs{
-			"id": id_value,
-		}
-
-		_, err = conn.Exec(ctx, string(delete_sql), delete_args)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -137,11 +149,9 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 			"item_amount":   item_amount,
 		}
 
-		for index := 0; index < 5; index++ {
-			_, err = conn.Exec(ctx, string(insert_query), insert_args)
-			if err != nil {
-				log.Fatal(err)
-			}
+		_, err = conn.Exec(ctx, string(insert_query), insert_args)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		r.ParseForm()

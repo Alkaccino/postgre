@@ -17,6 +17,7 @@
                     <th>Category</th>
                     <th>Amount</th>
                     <th>Delete</th>
+                    <th>Edit</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,6 +31,12 @@
                         <form action="/" method="POST">
                             <input type="hidden" value="{{.Id}}" name="delete">
                             <input type="submit" value="X">
+                        </form>
+                    </th>
+                    <th>
+                        <form action="/create/" method="POST">
+                            <input type="hidden" value="{{.Id}}" name="edit">
+                            <input type="submit" value="E">
                         </form>
                     </th>
                 </tr>
