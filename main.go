@@ -152,7 +152,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 		// POST && Editmode (END) ----------------------------------------
 
-		if id_value == "" {
+		if id_value == 0 {
 			insert_query, err := os.ReadFile("./sql/insert_items.sql")
 			if err != nil {
 				log.Fatal(err)
