@@ -92,37 +92,26 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 	defer selected_items.Close()
 
 	if r.Method == "POST" {
-
-		if r.FormValue("delete") != "" {
-			delete_sql, err := os.ReadFile("./sql/delete_item.sql")
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			id_value, err := strconv.Atoi(r.FormValue("delete"))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			delete_args := pgx.NamedArgs{
-				"id": id_value,
-			}
-
-			_, err = conn.Exec(ctx, string(delete_sql), delete_args)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-
-		} else if r.FormValue("edit") != "" {
-			id_value, err := strconv.Atoi(r.FormValue("edit"))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			fmt.Print(id_value)
+		delete_sql, err := os.ReadFile("./sql/delete_item.sql")
+		if err != nil {
+			log.Fatal(err)
 		}
+
+		id_value, err := strconv.Atoi(r.FormValue("delete"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		delete_args := pgx.NamedArgs{
+			"id": id_value,
+		}
+
+		_, err = conn.Exec(ctx, string(delete_sql), delete_args)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 		return
 	}
@@ -133,29 +122,61 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 
-		insert_query, err := os.ReadFile("./sql/insert_items.sql")
+		// POST && Editmode (START) -------------------------------------
+
+		id_value, err := strconv.Atoi(r.FormValue("edit"))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
+		select_sql, err := os.ReadFile("./sql/select_item.sql")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		insert_args := pgx.NamedArgs{
-			"item_name":     r.FormValue("item_name"),
-			"item_category": r.FormValue("item_category"),
-			"item_amount":   item_amount,
+		select_args := pgx.NamedArgs{
+			"id": id_value,
 		}
 
-		_, err = conn.Exec(ctx, string(insert_query), insert_args)
+		selected_item, err := conn.Query(ctx, string(select_sql), select_args)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		r.ParseForm()
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		var item Item
+		if err := selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Print(item)
+
+		// POST && Editmode (END) ----------------------------------------
+
+		if id_value == "" {
+			insert_query, err := os.ReadFile("./sql/insert_items.sql")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			insert_args := pgx.NamedArgs{
+				"item_name":     r.FormValue("item_name"),
+				"item_category": r.FormValue("item_category"),
+				"item_amount":   item_amount,
+			}
+
+			_, err = conn.Exec(ctx, string(insert_query), insert_args)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			r.ParseForm()
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
 	}
 
 	RenderTemplate(w, "create_item.html", nil)
