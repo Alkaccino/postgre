@@ -17,13 +17,12 @@
                     <th>Category</th>
                     <th>Amount</th>
                     <th>Delete</th>
-                    <th>Edit</th>
                 </tr>
             </thead>
             <tbody>
                 {{range .}}
                 <tr>
-                    <th>{{.Id}}</th>
+                    <th><a class="linked" href="/update/{{.Id}}">{{.Id}}</a></th>
                     <th>{{.Item_name}}</th>
                     <th>{{.Item_category}}</th>
                     <th>{{.Item_amount}}</th>
@@ -33,16 +32,10 @@
                             <input type="submit" value="X">
                         </form>
                     </th>
-                    <th>
-                        <form action="/update/" method="POST">
-                            <input type="hidden" value="{{.Id}}" name="edit">
-                            <input type="submit" value="E">
-                        </form>
-                    </th>
                 </tr>
                 {{end}}
             </tbody>
         </table>
-        <a href="/create">Create new Item</a>
+        <a class="normal" href="/create">Create new Item</a>
     </body>
 </html>

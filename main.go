@@ -32,6 +32,7 @@ func main() {
 	http.Handle("/static/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/", LandingHandler)
 	http.HandleFunc("/create/", CreateHandler)
+	http.HandleFunc("/update/", UpdateHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -121,65 +122,77 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 
 func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-
-		// POST && Editmode (START) -------------------------------------
-
-		id_value, err := strconv.Atoi(r.FormValue("edit"))
+		insert_query, err := os.ReadFile("./sql/insert_items.sql")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		select_sql, err := os.ReadFile("./sql/select_item.sql")
+		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		select_args := pgx.NamedArgs{
-			"id": id_value,
+		insert_args := pgx.NamedArgs{
+			"item_name":     r.FormValue("item_name"),
+			"item_category": r.FormValue("item_category"),
+			"item_amount":   item_amount,
 		}
 
-		selected_item, err := conn.Query(ctx, string(select_sql), select_args)
+		_, err = conn.Exec(ctx, string(insert_query), insert_args)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		var item Item
-		if err := selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Print(item)
-
-		// POST && Editmode (END) ----------------------------------------
-
-		if id_value == 0 {
-			insert_query, err := os.ReadFile("./sql/insert_items.sql")
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			insert_args := pgx.NamedArgs{
-				"item_name":     r.FormValue("item_name"),
-				"item_category": r.FormValue("item_category"),
-				"item_amount":   item_amount,
-			}
-
-			_, err = conn.Exec(ctx, string(insert_query), insert_args)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			r.ParseForm()
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-		}
+		r.ParseForm()
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
 	RenderTemplate(w, "create_item.html", nil)
+}
+
+func UpdateHandler(w http.ResponseWriter, r *http.Request) {
+	select_sql, err := os.ReadFile("./sql/select_item.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	selected_item, err := conn.Query(ctx, string(select_sql))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var item Item
+	if err := selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
+		log.Fatal(err)
+	}
+
+	if r.Method == "POST" {
+		update_query, err := os.ReadFile("./sql/update_item.sql")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		update_args := pgx.NamedArgs{
+			"item_name":     r.FormValue("item_name"),
+			"item_category": r.FormValue("item_category"),
+			"item_amount":   item_amount,
+		}
+
+		_, err = conn.Exec(ctx, string(update_query), update_args)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		r.ParseForm()
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+	RenderTemplate(w, "update_item.html", item)
 }
 
 func RenderTemplate(w http.ResponseWriter, templ_path string, templ_data any) {

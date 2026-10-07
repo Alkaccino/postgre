@@ -11,11 +11,11 @@
 
         <form action="/create/" method="POST">
             <label for="item_name">Itemname:</label><br>
-            <input type="text" id="item_name" name="item_name"><br>
+            <input type="text" id="item_name" name="item_name" value="{{.Item_name}}"><br>
             <label for="item_category">Category:</label><br>
-            <input type="text" id="item_category" name="item_category"><br>
+            <input type="text" id="item_category" name="item_category" value="{{.Item_category}}"><br>
             <label for="item_amount">Amount:</label><br>
-            <input type="text" id="item_amount" name="item_amount"><br>
+            <input type="text" id="item_amount" name="item_amount" value="{{.Item_amount}}"><br>
             <input type="submit" value="Submit"><br>
         </form>
 
