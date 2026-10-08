@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 
@@ -151,19 +152,27 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateHandler(w http.ResponseWriter, r *http.Request) {
+	var item Item
+
 	select_sql, err := os.ReadFile("./sql/select_item.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	selected_item, err := conn.Query(ctx, string(select_sql))
+	id_value, err := strconv.Atoi(path.Base(r.URL.Path))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var item Item
-	if err := selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
+	selected_item, err := conn.Query(ctx, string(select_sql), pgx.NamedArgs{"id": id_value})
+	if err != nil {
 		log.Fatal(err)
+	}
+
+	for selected_item.Next() {
+		if err := selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if r.Method == "POST" {
@@ -177,7 +186,13 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
+		id_value, err := strconv.Atoi(path.Base(r.URL.Path))
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		update_args := pgx.NamedArgs{
+			"id":            id_value,
 			"item_name":     r.FormValue("item_name"),
 			"item_category": r.FormValue("item_category"),
 			"item_amount":   item_amount,

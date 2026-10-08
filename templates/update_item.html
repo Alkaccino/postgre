@@ -7,9 +7,9 @@
         <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
-        <h1>Create Item</h1>
+        <h1>Update Item</h1>
 
-        <form action="/create/" method="POST">
+        <form action="/update/{{.Id}}" method="POST">
             <label for="item_name">Itemname:</label><br>
             <input type="text" id="item_name" name="item_name" value="{{.Item_name}}"><br>
             <label for="item_category">Category:</label><br>
