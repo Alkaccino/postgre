@@ -19,6 +19,7 @@ type Item struct {
 	Item_name     string
 	Item_category string
 	Item_amount   int
+	Created_at    string
 }
 
 var conn *pgx.Conn
@@ -27,7 +28,7 @@ var ctx = context.Background()
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 
-	InitDataBase()
+	InitDatabase()
 	defer conn.Close(ctx)
 
 	http.Handle("/static/", http.FileServer(http.Dir(".")))
@@ -37,7 +38,7 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-func InitDataBase() {
+func InitDatabase() {
 	env, err := os.ReadFile(".env")
 	if err != nil {
 		log.Fatal(err)
@@ -114,7 +115,6 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-
 		return
 	}
 
@@ -130,7 +130,8 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
 		if err != nil {
-			log.Fatal(err)
+			http.Error(w, "Wrong input: Has to be a number!", http.StatusBadRequest)
+			return
 		}
 
 		insert_args := pgx.NamedArgs{
@@ -144,8 +145,8 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		r.ParseForm()
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
 	}
 
 	RenderTemplate(w, "create_item.html", nil)
@@ -164,16 +165,12 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	selected_item, err := conn.Query(ctx, string(select_sql), pgx.NamedArgs{"id": id_value})
+	selected_item := conn.QueryRow(ctx, string(select_sql), pgx.NamedArgs{"id": id_value})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for selected_item.Next() {
-		if err := selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
-			log.Fatal(err)
-		}
-	}
+	err = selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, &item.Created_at)
 
 	if r.Method == "POST" {
 		update_query, err := os.ReadFile("./sql/update_item.sql")
@@ -183,7 +180,8 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
 		if err != nil {
-			log.Fatal(err)
+			http.Error(w, "Wrong input: Has to be a number!", http.StatusBadRequest)
+			return
 		}
 
 		id_value, err := strconv.Atoi(path.Base(r.URL.Path))
@@ -203,8 +201,8 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		r.ParseForm()
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
 	}
 
 	RenderTemplate(w, "update_item.html", item)
