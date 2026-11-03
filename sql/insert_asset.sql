@@ -1,0 +1,2 @@
+INSERT INTO assets (asset_name, category, serial_number, model, manufacturer, assigned_user, asset_location, purchased_price, purchased_at, quantity, asset_status, created_by, updated_by)
+VALUES(@asset_name, @category, @serial_number, @model, @manufacturer, @assigned_user, @asset_location, @purchased_price, @purchased_at, @quantity, @asset_status, @created_by, @updated_by)

@@ -1,7 +1,0 @@
-CREATE TABLE IF NOT EXISTS items(
-    id SERIAL PRIMARY KEY,
-    item_name VARCHAR(255) NOT NULL,
-    item_category VARCHAR(255) NOT NULL,
-    item_amount INTEGER NOT NULL DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);

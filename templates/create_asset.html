@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="create-page">
+        <title>Create Asset</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <h1>Create Asset</h1>
+
+        <form action="/create/" method="POST">
+            <label for="asset_name">Assetname:</label><br>
+            <input type="text" id="asset_name" name="asset_name" required><br>
+            <label for="category">Category:</label><br>
+            <input type="text" id="category" name="category" required><br>
+            <label for="serial_number">Serialnumber:</label><br>
+            <input type="text" id="serial_number" name="serial_number"><br>
+            <label for="model">Model:</label><br>
+            <input type="text" id="model" name="model"><br>
+            <label for="manufacturer">Manufacturer:</label><br>
+            <input type="text" id="manufacturer" name="manufacturer"><br>
+            <label for="assigned_user">Assigned user:</label><br>
+            <input type="text" id="assigned_user" name="assigned_user"><br>
+            <label for="asset_location">Asset location:</label><br>
+            <input type="text" id="asset_location" name="asset_location"><br>
+            <label for="purchased_price">Purchased price:</label><br>
+            <input type="text" id="purchased_price" name="purchased_price"><br>
+            <label for="purchased_at">Purchased at:</label><br>
+            <input type="text" id="purchased_at" name="purchased_at"><br>
+            <label for="quantity">Quantity:</label><br>
+            <input type="number" id="quantity" name="quantity"><br>
+            <label for="asset_status">Asset status:</label><br>
+            <input type="text" id="asset_status" name="asset_status"><br>
+            <label for="created_by">Created by:</label><br>
+            <input type="text" id="created_by" name="created_by"><br>
+            <label for="updated_by">Updated by:</label><br>
+            <input type="text" id="updated_by" name="updated_by"><br>
+            <input type="submit" value="Submit"><br>
+        </form>
+
+        <a class="normal" href="/">Go back</a>
+    </body>
+</html>

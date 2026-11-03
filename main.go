@@ -14,12 +14,23 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Item struct {
-	Id            int
-	Item_name     string
-	Item_category string
-	Item_amount   int
-	Created_at    string
+type Asset struct {
+	Id              int
+	Asset_name      string
+	Category        string
+	Serialnumber    *string
+	Model           *string
+	Manufacturer    *string
+	Assigned_user   *string
+	Asset_location  *string
+	Purchased_at    *string
+	Purchased_price *float32
+	Quantity        *int
+	Asset_status    *string
+	Created_at      string
+	Updated_at      string
+	Created_by      string
+	Updated_by      string
 }
 
 var conn *pgx.Conn
@@ -59,7 +70,7 @@ func InitDatabase() {
 		log.Fatal(err)
 	}
 
-	create_sql, err := os.ReadFile("./sql/create_table.sql")
+	create_sql, err := os.ReadFile("./sql/create_tables.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,31 +82,31 @@ func InitDatabase() {
 }
 
 func LandingHandler(w http.ResponseWriter, r *http.Request) {
-	var items []Item
+	var assets []Asset
 
-	select_sql, err := os.ReadFile("./sql/select_items.sql")
+	select_sql, err := os.ReadFile("./sql/select_assets.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	selected_items, err := conn.Query(ctx, string(select_sql))
+	selected_assets, err := conn.Query(ctx, string(select_sql))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for selected_items.Next() {
-		var item Item
-		if err := selected_items.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, nil); err != nil {
+	for selected_assets.Next() {
+		var asset Asset
+		if err := selected_assets.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, nil, nil, &asset.Created_by, &asset.Updated_by); err != nil {
 			log.Fatal(err)
 		}
 
-		items = append(items, item)
+		assets = append(assets, asset)
 	}
 
-	defer selected_items.Close()
+	defer selected_assets.Close()
 
 	if r.Method == "POST" {
-		delete_sql, err := os.ReadFile("./sql/delete_item.sql")
+		delete_sql, err := os.ReadFile("./sql/delete_asset.sql")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -118,26 +129,42 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RenderTemplate(w, "index.html", items)
+	RenderTemplate(w, "index.html", assets)
 }
 
 func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		insert_query, err := os.ReadFile("./sql/insert_items.sql")
+		insert_query, err := os.ReadFile("./sql/insert_asset.sql")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
+		quantity, err := strconv.Atoi(r.FormValue("quantity"))
 		if err != nil {
 			http.Error(w, "Wrong input: Has to be a number!", http.StatusBadRequest)
 			return
 		}
 
+		purchased_price, err := strconv.ParseFloat(r.FormValue("purchased_price"), 32)
+		if err != nil {
+			http.Error(w, "Wrong input: Has to be a Float!", http.StatusBadRequest)
+			return
+		}
+
 		insert_args := pgx.NamedArgs{
-			"item_name":     r.FormValue("item_name"),
-			"item_category": r.FormValue("item_category"),
-			"item_amount":   item_amount,
+			"asset_name":      r.FormValue("asset_name"),
+			"category":        r.FormValue("category"),
+			"serial_number":   r.FormValue("serial_number"),
+			"model":           r.FormValue("model"),
+			"manufacturer":    r.FormValue("manufacturer"),
+			"assigned_user":   r.FormValue("assigned_user"),
+			"asset_location":  r.FormValue("asset_location"),
+			"purchased_price": purchased_price,
+			"purchased_at":    r.FormValue("purchased_at"),
+			"quantity":        quantity,
+			"asset_status":    r.FormValue("asset_status"),
+			"created_by":      r.FormValue("created_by"),
+			"updated_by":      r.FormValue("updated_by"),
 		}
 
 		_, err = conn.Exec(ctx, string(insert_query), insert_args)
@@ -149,13 +176,13 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RenderTemplate(w, "create_item.html", nil)
+	RenderTemplate(w, "create_asset.html", nil)
 }
 
 func UpdateHandler(w http.ResponseWriter, r *http.Request) {
-	var item Item
+	var asset Asset
 
-	select_sql, err := os.ReadFile("./sql/select_item.sql")
+	select_sql, err := os.ReadFile("./sql/select_asset.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -165,22 +192,28 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	selected_item := conn.QueryRow(ctx, string(select_sql), pgx.NamedArgs{"id": id_value})
+	selected_asset := conn.QueryRow(ctx, string(select_sql), pgx.NamedArgs{"id": id_value})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = selected_item.Scan(&item.Id, &item.Item_name, &item.Item_category, &item.Item_amount, &item.Created_at)
+	err = selected_asset.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_at, &asset.Updated_at, &asset.Created_by, &asset.Updated_by)
 
 	if r.Method == "POST" {
-		update_query, err := os.ReadFile("./sql/update_item.sql")
+		update_query, err := os.ReadFile("./sql/update_asset.sql")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		item_amount, err := strconv.Atoi(r.FormValue("item_amount"))
+		quantity, err := strconv.Atoi(r.FormValue("quantity"))
 		if err != nil {
 			http.Error(w, "Wrong input: Has to be a number!", http.StatusBadRequest)
+			return
+		}
+
+		purchased_price, err := strconv.ParseFloat(r.FormValue("purchased_price"), 32)
+		if err != nil {
+			http.Error(w, "Wrong input: Has to be a Float!", http.StatusBadRequest)
 			return
 		}
 
@@ -190,10 +223,21 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		update_args := pgx.NamedArgs{
-			"id":            id_value,
-			"item_name":     r.FormValue("item_name"),
-			"item_category": r.FormValue("item_category"),
-			"item_amount":   item_amount,
+			"id":              id_value,
+			"asset_name":      r.FormValue("asset_name"),
+			"category":        r.FormValue("category"),
+			"serial_number":   r.FormValue("serial_number"),
+			"model":           r.FormValue("model"),
+			"manufacturer":    r.FormValue("manufacturer"),
+			"assigned_user":   r.FormValue("assigned_user"),
+			"asset_location":  r.FormValue("asset_location"),
+			"purchased_price": purchased_price,
+			"purchased_at":    r.FormValue("purchased_at"),
+			"quantity":        quantity,
+			"asset_status":    r.FormValue("asset_status"),
+			// TODO: Programmatically update the updated_at value.
+			"created_by": r.FormValue("created_by"),
+			"updated_by": r.FormValue("updated_by"),
 		}
 
 		_, err = conn.Exec(ctx, string(update_query), update_args)
@@ -205,7 +249,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RenderTemplate(w, "update_item.html", item)
+	RenderTemplate(w, "update_asset.html", asset)
 }
 
 func RenderTemplate(w http.ResponseWriter, templ_path string, templ_data any) {

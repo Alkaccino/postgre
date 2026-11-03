@@ -1,1 +1,0 @@
-SELECT * FROM items WHERE id = @id LIMIT 1

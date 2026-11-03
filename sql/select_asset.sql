@@ -1,0 +1,1 @@
+SELECT * FROM assets WHERE id = @id LIMIT 1

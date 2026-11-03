@@ -3,19 +3,29 @@
     <head>
         <meta charset="UTF-8">
         <meta name="landingpage">
-        <title>Itemlist</title>
+        <title>Assetlist</title>
         <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
-        <h1>Itemlist</h1>
+        <h1>Assetlist</h1>
 
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Itemname</th>
+                    <th>Assetname</th>
                     <th>Category</th>
-                    <th>Amount</th>
+                    <th>Serialnumber</th>
+                    <th>Model</th>
+                    <th>Manufacturer</th>
+                    <th>Assigned user</th>
+                    <th>Asset location</th>
+                    <th>Purchased at</th>
+                    <th>Purchased price</th>
+                    <th>Quantity</th>
+                    <th>Asset status</th>
+                    <th>Created by</th>
+                    <th>Updated by</th>
                     <th>Delete</th>
                     <th>Edit</th>
                 </tr>
@@ -24,9 +34,19 @@
                 {{range .}}
                 <tr>
                     <th><a class="linked" href="/update/{{.Id}}">{{.Id}}</a></th>
-                    <th>{{.Item_name}}</th>
-                    <th>{{.Item_category}}</th>
-                    <th>{{.Item_amount}}</th>
+                    <th>{{.Asset_name}}</th>
+                    <th>{{.Category}}</th>
+                    <th>{{.Serialnumber}}</th>
+                    <th>{{.Model}}</th>
+                    <th>{{.Manufacturer}}</th>
+                    <th>{{.Assigned_user}}</th>
+                    <th>{{.Asset_location}}</th>
+                    <th>{{.Purchased_at}}</th>
+                    <th>{{.Purchased_price}}</th>
+                    <th>{{.Quantity}}</th>
+                    <th>{{.Asset_status}}</th>
+                    <th>{{.Created_by}}</th>
+                    <th>{{.Updated_by}}</th>
                     <th>
                         <form action="/" method="POST">
                             <input type="hidden" value="{{.Id}}" name="delete">
@@ -38,6 +58,6 @@
                 {{end}}
             </tbody>
         </table>
-        <a class="normal" href="/create">Create new Item</a>
+        <a class="normal" href="/create">Create new Asset</a>
     </body>
 </html>
