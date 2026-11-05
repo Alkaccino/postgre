@@ -10,6 +10,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -235,9 +236,9 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 			"purchased_at":    r.FormValue("purchased_at"),
 			"quantity":        quantity,
 			"asset_status":    r.FormValue("asset_status"),
-			// TODO: Programmatically update the updated_at value.
-			"created_by": r.FormValue("created_by"),
-			"updated_by": r.FormValue("updated_by"),
+			"updated_at":      time.Now(),
+			"created_by":      r.FormValue("created_by"),
+			"updated_by":      r.FormValue("updated_by"),
 		}
 
 		_, err = conn.Exec(ctx, string(update_query), update_args)
