@@ -135,6 +135,7 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 
 func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
+
 		insert_query, err := os.ReadFile("./sql/insert_asset.sql")
 		if err != nil {
 			log.Fatal(err)
@@ -146,7 +147,13 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		purchased_price, err := strconv.ParseFloat(r.FormValue("purchased_price"), 32)
+		purchased_price_string := r.FormValue("purchased_price")
+
+		if strings.Contains(purchased_price_string, ",") {
+			purchased_price_string = strings.Replace(purchased_price_string, ",", ".", -1)
+		}
+
+		purchased_price, err := strconv.ParseFloat(purchased_price_string, 32)
 		if err != nil {
 			http.Error(w, "Wrong input: Has to be a Float!", http.StatusBadRequest)
 			return
@@ -201,6 +208,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	err = selected_asset.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_by, &asset.Updated_by, &asset.Created_at, &asset.Updated_at)
 
 	if r.Method == "POST" {
+
 		update_query, err := os.ReadFile("./sql/update_asset.sql")
 		if err != nil {
 			log.Fatal(err)
@@ -212,7 +220,13 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		purchased_price, err := strconv.ParseFloat(r.FormValue("purchased_price"), 32)
+		purchased_price_string := r.FormValue("purchased_price")
+
+		if strings.Contains(purchased_price_string, ",") {
+			purchased_price_string = strings.Replace(purchased_price_string, ",", ".", -1)
+		}
+
+		purchased_price, err := strconv.ParseFloat(purchased_price_string, 32)
 		if err != nil {
 			http.Error(w, "Wrong input: Has to be a Float!", http.StatusBadRequest)
 			return
