@@ -97,7 +97,7 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 
 	for selected_assets.Next() {
 		var asset Asset
-		if err := selected_assets.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, nil, nil, &asset.Created_by, &asset.Updated_by); err != nil {
+		if err := selected_assets.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_by, &asset.Updated_by, nil, nil); err != nil {
 			log.Fatal(err)
 		}
 
@@ -198,7 +198,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	err = selected_asset.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_at, &asset.Updated_at, &asset.Created_by, &asset.Updated_by)
+	err = selected_asset.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_by, &asset.Updated_by, &asset.Created_at, &asset.Updated_at)
 
 	if r.Method == "POST" {
 		update_query, err := os.ReadFile("./sql/update_asset.sql")
