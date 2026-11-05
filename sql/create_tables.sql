@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS assets(
     id SERIAL PRIMARY KEY,
     asset_name VARCHAR(255) NOT NULL,
     category VARCHAR(255) NOT NULL,
-    serial_number VARCHAR(20),
     model VARCHAR(255),
     manufacturer VARCHAR(255),
     assigned_user VARCHAR(255),

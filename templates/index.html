@@ -3,19 +3,18 @@
     <head>
         <meta charset="UTF-8">
         <meta name="landingpage">
-        <title>Assetlist</title>
+        <title>Asset list</title>
         <link rel="stylesheet" href="/static/style.css">
     </head>
     <body>
-        <h1>Assetlist</h1>
+        <h1>Asset list</h1>
 
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Assetname</th>
+                    <th>Asset name</th>
                     <th>Category</th>
-                    <th>Serialnumber</th>
                     <th>Model</th>
                     <th>Manufacturer</th>
                     <th>Assigned user</th>
@@ -36,7 +35,6 @@
                     <th><a class="linked" href="/update/{{.Id}}">{{.Id}}</a></th>
                     <th>{{.Asset_name}}</th>
                     <th>{{.Category}}</th>
-                    <th>{{.Serialnumber}}</th>
                     <th>{{.Model}}</th>
                     <th>{{.Manufacturer}}</th>
                     <th>{{.Assigned_user}}</th>

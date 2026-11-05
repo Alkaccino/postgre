@@ -19,7 +19,6 @@ type Asset struct {
 	Id              int
 	Asset_name      string
 	Category        string
-	Serialnumber    *string
 	Model           *string
 	Manufacturer    *string
 	Assigned_user   *string
@@ -97,7 +96,7 @@ func LandingHandler(w http.ResponseWriter, r *http.Request) {
 
 	for selected_assets.Next() {
 		var asset Asset
-		if err := selected_assets.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_by, &asset.Updated_by, nil, nil); err != nil {
+		if err := selected_assets.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_by, &asset.Updated_by, nil, nil); err != nil {
 			log.Fatal(err)
 		}
 
@@ -143,7 +142,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 		quantity, err := strconv.Atoi(r.FormValue("quantity"))
 		if err != nil {
-			http.Error(w, "Wrong input: Has to be a number!", http.StatusBadRequest)
+			http.Error(w, "Wrong input: Quantity has to be a number!", http.StatusBadRequest)
 			return
 		}
 
@@ -155,14 +154,13 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 		purchased_price, err := strconv.ParseFloat(purchased_price_string, 32)
 		if err != nil {
-			http.Error(w, "Wrong input: Has to be a Float!", http.StatusBadRequest)
+			http.Error(w, "Wrong input: Purchased price has to be a Float!", http.StatusBadRequest)
 			return
 		}
 
 		insert_args := pgx.NamedArgs{
 			"asset_name":      r.FormValue("asset_name"),
 			"category":        r.FormValue("category"),
-			"serial_number":   r.FormValue("serial_number"),
 			"model":           r.FormValue("model"),
 			"manufacturer":    r.FormValue("manufacturer"),
 			"assigned_user":   r.FormValue("assigned_user"),
@@ -205,7 +203,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	err = selected_asset.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Serialnumber, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_by, &asset.Updated_by, &asset.Created_at, &asset.Updated_at)
+	err = selected_asset.Scan(&asset.Id, &asset.Asset_name, &asset.Category, &asset.Model, &asset.Manufacturer, &asset.Assigned_user, &asset.Asset_location, &asset.Purchased_price, &asset.Purchased_at, &asset.Quantity, &asset.Asset_status, &asset.Created_by, &asset.Updated_by, &asset.Created_at, &asset.Updated_at)
 
 	if r.Method == "POST" {
 
@@ -216,7 +214,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 		quantity, err := strconv.Atoi(r.FormValue("quantity"))
 		if err != nil {
-			http.Error(w, "Wrong input: Has to be a number!", http.StatusBadRequest)
+			http.Error(w, "Wrong input: Quantity has to be a number!", http.StatusBadRequest)
 			return
 		}
 
@@ -228,7 +226,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 		purchased_price, err := strconv.ParseFloat(purchased_price_string, 32)
 		if err != nil {
-			http.Error(w, "Wrong input: Has to be a Float!", http.StatusBadRequest)
+			http.Error(w, "Wrong input: Purchased price has to be a Float!", http.StatusBadRequest)
 			return
 		}
 
@@ -241,7 +239,6 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 			"id":              id_value,
 			"asset_name":      r.FormValue("asset_name"),
 			"category":        r.FormValue("category"),
-			"serial_number":   r.FormValue("serial_number"),
 			"model":           r.FormValue("model"),
 			"manufacturer":    r.FormValue("manufacturer"),
 			"assigned_user":   r.FormValue("assigned_user"),
